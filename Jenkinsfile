@@ -15,7 +15,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Enigmage/book-recommendation.git'
             }
         }
-
+      
         stage('Build Docker Image') {
             steps {
                 script {
