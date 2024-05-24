@@ -15,24 +15,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Enigmage/book-recommendation.git'
             }
         }
-
-        stage('Setup Python Environment') {
-            steps {
-                // Set up Python and Poetry
-                sh '''
-                    # Install Python
-                    pyenv install ${PYTHON_VERSION}
-                    pyenv global ${PYTHON_VERSION}
-
-                    # Install Poetry
-                    curl -sSL https://install.python-poetry.org | python3 -
-
-                    # Install dependencies
-                    poetry install
-                '''
-            }
-        }
-
+      
         stage('Build Docker Image') {
             steps {
                 script {
