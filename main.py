@@ -206,7 +206,7 @@ def main():
                             "average_rating",
                             "ratings_count",
                         ]
-                    ].iloc[[i for i in range(5)]]
+                    ].iloc[[i for i in range(selected_book_num)]]
                     st.write(recs)
                 except:
                     st.error("Oops! I need to fix this algorithm.")
@@ -225,7 +225,7 @@ def main():
                             "average_rating",
                             "ratings_count",
                         ]
-                    ].iloc[[i for i in range(5, 10)]]
+                    ].iloc[[i for i in range(selected_book_num)]]
                     st.write(recs)
                 except:
                     st.error("Oops! I need to fix this algorithm.")
