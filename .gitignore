@@ -1,0 +1,28 @@
+# General
+__pycache__/
+*.pyc
+
+# Poetry
+poetry.lock
+poetry-managed/
+
+# Streamlit
+.streamlit/
+
+# IDE-specific
+.vscode/
+.idea/
+*.code-workspace
+
+# Python-specific
+*.pyo
+*.pyc
+*.pyd
+*.pyz
+*.pyzw
+
+# Temporary files
+*.swp
+*~
+.DS_Store
+Thumbs.db
