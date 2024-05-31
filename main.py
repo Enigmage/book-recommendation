@@ -5,6 +5,11 @@ import hmac
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
+from auth0_component import login_button
+
+clientId = "WWbK3on2iUJs8ZraQmYvysnqbcCMIyZU"
+domain = "dev-772han5id6zlgz6a.us.auth0.com"
+
 
 # collaborative filtering works perfectly on local
 # from surprise import Reader, Dataset, SVD
@@ -157,9 +162,12 @@ def main():
         initial_sidebar_state="auto",
         menu_items=None,
     )
-    st.session_state.logged_in = False
-    if not check_password():
+    user_info = login_button(clientId, domain=domain)
+    # st.session_state.logged_in = False
+    if not user_info:
         st.stop()
+
+    print(user_info)
 
     # Header contents
     st.write("# Book Recommender")
