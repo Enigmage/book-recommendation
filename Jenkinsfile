@@ -12,7 +12,7 @@ pipeline {
     }
 
     tools {
-        sonarQubeScanner 'hudson.plugins.sonar.SonarRunnerInstallation'
+        sonarScanner 'SonarQube Scanner'
     }
 
     stages {
