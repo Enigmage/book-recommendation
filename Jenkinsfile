@@ -11,6 +11,10 @@ pipeline {
         SONAR_LOGIN = '86ebb9e4-b848-4ab5-9957-de0eb2a5291d'
     }
 
+    tools {
+        sonarQubeScanner 'SonarQube Scanner'
+    }
+
     stages {
         stage('Checkout') {
             steps {
