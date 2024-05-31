@@ -12,7 +12,7 @@ pipeline {
     }
 
     tools {
-        sonarQubeScanner 'SonarQube Scanner'
+        inst sonarRunner 'SonarQube Scanner'
     }
 
     stages {
@@ -39,7 +39,7 @@ pipeline {
                 script {
                     // Run SonarQube scanner
                     withSonarQubeEnv('SonarQube') {
-                        def scannerHome = tool name: 'SonarQube Scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                        def scannerHome = tool name: 'SonarQube Scanner'
                         sh '''
                             ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
