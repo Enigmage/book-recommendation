@@ -46,6 +46,7 @@ pipeline {
                         """
                     }
                 }
+            }
         }
 
         stage("Quality Gate") {
