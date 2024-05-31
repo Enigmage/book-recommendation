@@ -12,7 +12,7 @@ pipeline {
     }
 
     tools {
-        inst sonarRunner 'SonarQube Scanner'
+        inst sonarRunner 'SonarQube Scanner', version: '6.0.0.4432'
     }
 
     stages {
