@@ -53,7 +53,7 @@ pipeline {
             steps {
                 script {
                     // Check the quality gate result
-                    timeout(time: 1, unit: "MINUTES") {
+                    timeout(time: 5, unit: "MINUTES") {
                         waitForQualityGate abortPipeline: false
                     }
                 }
