@@ -11,10 +11,6 @@ pipeline {
         SONAR_LOGIN = '86ebb9e4-b848-4ab5-9957-de0eb2a5291d'
     }
 
-    tools {
-        sonarScanner 'SonarQube Scanner'
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -38,8 +34,8 @@ pipeline {
             steps {
                 script {
                     // Run SonarQube scanner
+                    def scannerHome = tool 'SonarQube Scanner';
                     withSonarQubeEnv('SonarQube') {
-                        def scannerHome = tool name: 'SonarQube Scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
                         sh '''
                             ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
