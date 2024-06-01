@@ -8,6 +8,7 @@ from sklearn.metrics.pairwise import linear_kernel
 
 # collaborative filtering works perfectly on local
 # from surprise import Reader, Dataset, SVD
+# from surprise import Reader, Dataset, SVD
 def check_password():
     """Returns `True` if the user had a correct password."""
 
