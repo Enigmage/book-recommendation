@@ -52,7 +52,6 @@ pipeline {
                             -Dsonar.host.url=${SONAR_HOST_URL} \
                             -Dsonar.login=${SONAR_LOGIN} \
                             -Dsonar.python.version=${PYTHON_VERSION}
-                            -Dsonar.python.coverage.reportPath = coverage.xml
                         """
                     }
                 }
