@@ -170,110 +170,111 @@ def main():
     print(user_info)
 
     # Header contents
-    st.write("# Book Recommender")
-    with st.expander("See explanation"):
-        st.write(
-            """
-            In this book recommender, there are three models available.
-            1. Simple Recommender
-            This model offers generalized recommendations to every user based on popularity and average rating of 
-            the book. This model does not provide user-specific recommendations.
-            
-            2.  Content Based Filtering
-            To personalise our recommendations, you need to pick your favorite book. The cosine similarity between 
-            books are measured, and then the model will suggest books that are most similar to a particular book that 
-            a user liked.
-            
-            3. Content Based Filtering+
-            The mechanism to remove books with low ratings has been added on top of the content based filtering.
-            This model will return books that are similar to your input, are popular and have high ratings.
+    if user_info:
+        st.write("# Book Recommender")
+        with st.expander("See explanation"):
+            st.write(
+                """
+                In this book recommender, there are three models available.
+                1. Simple Recommender
+                This model offers generalized recommendations to every user based on popularity and average rating of 
+                the book. This model does not provide user-specific recommendations.
+                
+                2.  Content Based Filtering
+                To personalise our recommendations, you need to pick your favorite book. The cosine similarity between 
+                books are measured, and then the model will suggest books that are most similar to a particular book that 
+                a user liked.
+                
+                3. Content Based Filtering+
+                The mechanism to remove books with low ratings has been added on top of the content based filtering.
+                This model will return books that are similar to your input, are popular and have high ratings.
 
-            """
+                """
+            )
+
+        books = read_book_data().copy()
+
+        # User input
+        model, book_num = st.columns((2, 1))
+        selected_model = model.selectbox(
+            "Select model",
+            options=[
+                "Simple Recommender",
+                "Content Based Filtering",
+                "Content Based Filtering+",
+            ],
+        )
+        selected_book_num = book_num.selectbox(
+            "Number of books", options=[5, 10, 15, 20, 25]
         )
 
-    books = read_book_data().copy()
-
-    # User input
-    model, book_num = st.columns((2, 1))
-    selected_model = model.selectbox(
-        "Select model",
-        options=[
-            "Simple Recommender",
-            "Content Based Filtering",
-            "Content Based Filtering+",
-        ],
-    )
-    selected_book_num = book_num.selectbox(
-        "Number of books", options=[5, 10, 15, 20, 25]
-    )
-
-    if selected_model == "Simple Recommender":
-        if st.button("Recommend"):
-            try:
-                recs = simple_recommender(books=books, n=selected_book_num)
-                st.write(recs)
-            except:
-                st.error("Oops!. I need to fix this algorithm.")
-
-    # elif selected_model == 'Collaborative Filtering':
-    #     ratings_data = read_ratings_data()
-    #     # user_id_picked = st.selectbox('Select user_id to explore', ratings_data["user_id"].unique(), 0)
-    #     user_id_picked = st.number_input(label="User ID:", min_value=1, max_value=60000)
-    #     if st.button('Recommend'):
-    #         if user_id_picked in ratings_data["user_id"].unique():
-    #             with st.spinner('Getting recommendation for you...'):
-    #                 recs = get_recommendation_svd(books=books,
-    #                                               ratings_data=ratings_data,
-    #                                               user_id=user_id_picked,
-    #                                               n=selected_book_num)
-    #             st.write(recs)
-    #         else:
-    #             st.write('You have entered an invalid User ID')
-
-    else:
-        options = np.concatenate(([""], books["title"].unique()))
-        book_title = st.selectbox("Pick your favorite book", options, 0)
-
-        if selected_model == "Content Based Filtering":
+        if selected_model == "Simple Recommender":
             if st.button("Recommend"):
+                try:
+                    recs = simple_recommender(books=books, n=selected_book_num)
+                    st.write(recs)
+                except:
+                    st.error("Oops!. I need to fix this algorithm.")
+
+        # elif selected_model == 'Collaborative Filtering':
+        #     ratings_data = read_ratings_data()
+        #     # user_id_picked = st.selectbox('Select user_id to explore', ratings_data["user_id"].unique(), 0)
+        #     user_id_picked = st.number_input(label="User ID:", min_value=1, max_value=60000)
+        #     if st.button('Recommend'):
+        #         if user_id_picked in ratings_data["user_id"].unique():
+        #             with st.spinner('Getting recommendation for you...'):
+        #                 recs = get_recommendation_svd(books=books,
+        #                                               ratings_data=ratings_data,
+        #                                               user_id=user_id_picked,
+        #                                               n=selected_book_num)
+        #             st.write(recs)
+        #         else:
+        #             st.write('You have entered an invalid User ID')
+
+        else:
+            options = np.concatenate(([""], books["title"].unique()))
+            book_title = st.selectbox("Pick your favorite book", options, 0)
+
+            if selected_model == "Content Based Filtering":
+                if st.button("Recommend"):
+                    if book_title == "":
+                        st.write("Please pick a book or use Rating-Popularity Model")
+                        return
+                    try:
+                        # recs = content_recommendation(books=books,
+                        #                               title=book_title,
+                        #                               n=selected_book_num)
+                        recs = books[
+                            [
+                                "book_id",
+                                "title",
+                                "authors",
+                                "average_rating",
+                                "ratings_count",
+                            ]
+                        ].iloc[[i for i in range(selected_book_num)]]
+                        st.write(recs)
+                    except:
+                        st.error("Oops! I need to fix this algorithm.")
+
+            elif selected_model == "Content Based Filtering+":
                 if book_title == "":
-                    st.write("Please pick a book or use Rating-Popularity Model")
+                    st.write("Please pick a book or use Simple Recommender")
                     return
-                try:
-                    # recs = content_recommendation(books=books,
-                    #                               title=book_title,
-                    #                               n=selected_book_num)
-                    recs = books[
-                        [
-                            "book_id",
-                            "title",
-                            "authors",
-                            "average_rating",
-                            "ratings_count",
-                        ]
-                    ].iloc[[i for i in range(selected_book_num)]]
-                    st.write(recs)
-                except:
-                    st.error("Oops! I need to fix this algorithm.")
-
-        elif selected_model == "Content Based Filtering+":
-            if book_title == "":
-                st.write("Please pick a book or use Simple Recommender")
-                return
-            if st.button("Recommend"):
-                try:
-                    recs = books[
-                        [
-                            "book_id",
-                            "title",
-                            "authors",
-                            "average_rating",
-                            "ratings_count",
-                        ]
-                    ].iloc[[i for i in range(selected_book_num)]]
-                    st.write(recs)
-                except:
-                    st.error("Oops! I need to fix this algorithm.")
+                if st.button("Recommend"):
+                    try:
+                        recs = books[
+                            [
+                                "book_id",
+                                "title",
+                                "authors",
+                                "average_rating",
+                                "ratings_count",
+                            ]
+                        ].iloc[[i for i in range(selected_book_num)]]
+                        st.write(recs)
+                    except:
+                        st.error("Oops! I need to fix this algorithm.")
 
 
 if __name__ == "__main__":
