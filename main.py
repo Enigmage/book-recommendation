@@ -1,59 +1,11 @@
 import numpy as np
 import streamlit as st
 import pandas as pd
-import hmac
 import sqlite3
 import hashlib
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
-
-conn = sqlite3.connect("user_data.db")
-c = conn.cursor()
-
-# Create user table if not exists
-c.execute(
-    """CREATE TABLE IF NOT EXISTS users
-             (username TEXT PRIMARY KEY, password TEXT)"""
-)
-conn.commit()
-
-
-# collaborative filtering works perfectly on local
-# from surprise import Reader, Dataset, SVD
-def check_password():
-    """Returns `True` if the user had a correct password."""
-
-    def login_form():
-        """Form with widgets to collect user information"""
-        with st.form("Credentials"):
-            st.text_input("Username", key="username")
-            st.text_input("Password", type="password", key="password")
-            st.form_submit_button("Log in", on_click=password_entered)
-
-    def password_entered():
-        """Checks whether a password entered by the user is correct."""
-        if st.session_state["username"] in st.secrets[
-            "passwords"
-        ] and hmac.compare_digest(
-            st.session_state["password"],
-            st.secrets.passwords[st.session_state["username"]],
-        ):
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # Don't store the username or password.
-            del st.session_state["username"]
-        else:
-            st.session_state["password_correct"] = False
-
-    # Return True if the username + password is validated.
-    if st.session_state.get("password_correct", False):
-        return True
-
-    # Show inputs for username + password.
-    login_form()
-    if "password_correct" in st.session_state:
-        st.error("😕 User not known or password incorrect")
-    return False
 
 
 # data loading
@@ -162,72 +114,11 @@ def improved_recommendation(books, title, n=5):
 
 
 # App declaration
-def main():
-    st.set_page_config(
-        page_title="Book Recommender",
-        page_icon="📔",
-        layout="centered",
-        initial_sidebar_state="auto",
-        menu_items=None,
-    )
-    st.session_state["logged_in"] = False
-
-    def authenticate_user(username, password):
-        """Authenticates user against the SQLite database."""
-        c.execute("SELECT * FROM users WHERE username = ?", (username,))
-        user = c.fetchone()
-        if user :
-            return True
-        else:
-            return False
-
-    def create_user(username, password):
-        """Creates a new user in the SQLite database."""
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        c.execute(
-            "INSERT INTO users (username, password) VALUES (?, ?)",
-            (username, hashed_password),
-        )
-        conn.commit()
-
-    def login_form():
-        """Form with widgets to collect user information"""
-        with st.form("Login"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            if st.form_submit_button("Log in"):
-                if authenticate_user(username, password):
-                    st.session_state["username"] = username
-                    st.session_state["logged_in"] = True
-                    return
-                else:
-                    st.error("Invalid username or password")
-                    return
-
-    def signup_form():
-        """Form with widgets to collect user signup information"""
-        with st.form("Signup"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            confirm_password = st.text_input("Confirm Password", type="password")
-            if st.form_submit_button("Sign Up"):
-                if password == confirm_password:
-                    create_user(username, password)
-                    st.success("User created successfully. Please log in.")
-                else:
-                    st.error("Passwords do not match")
-
-    print(st.session_state["logged_in"])
-    if not st.session_state["logged_in"]:
-        login_form()
-        st.write("Don't have an account? Sign up below.")
-        signup_form()
-        return
+def home():
     # if not check_password():
     #     st.stop()
 
     # Header contents
-    st.write("# Book Recommender")
     with st.expander("See explanation"):
         st.write(
             """
@@ -331,6 +222,98 @@ def main():
                     st.write(recs)
                 except:
                     st.error("Oops! I need to fix this algorithm.")
+
+
+# Security
+# passlib,hashlib,bcrypt,scrypt
+def make_hashes(password):
+    return hashlib.sha256(str.encode(password)).hexdigest()
+
+
+def check_hashes(password, hashed_text):
+    if make_hashes(password) == hashed_text:
+        return hashed_text
+    return False
+
+
+conn = sqlite3.connect("data.db")
+c = conn.cursor()
+
+
+# DB  Functions
+def create_usertable():
+    c.execute("CREATE TABLE IF NOT EXISTS userstable(username TEXT,password TEXT)")
+
+
+def add_userdata(username, password):
+    c.execute(
+        "INSERT INTO userstable(username,password) VALUES (?,?)", (username, password)
+    )
+    conn.commit()
+
+
+def login_user(username, password):
+    c.execute(
+        "SELECT * FROM userstable WHERE username =? AND password = ?",
+        (username, password),
+    )
+    data = c.fetchall()
+    return data
+
+
+def view_all_users():
+    c.execute("SELECT * FROM userstable")
+    data = c.fetchall()
+    return data
+
+
+def main():
+    """Simple Login App"""
+    st.set_page_config(
+        page_title="Book Recommender",
+        page_icon="📔",
+        layout="centered",
+        initial_sidebar_state="auto",
+        menu_items=None,
+    )
+
+    st.title("Book Recommendation App")
+
+    menu = ["Home", "Login", "SignUp"]
+    choice = st.sidebar.selectbox("Menu", menu)
+
+    # if choice == "Home":
+    #     st.subheader("Home")
+
+    if choice == "Login":
+        st.subheader("Login to use")
+
+        username = st.sidebar.text_input("User Name")
+        password = st.sidebar.text_input("Password", type="password")
+        if st.sidebar.checkbox("Login"):
+            # if password == '12345':
+            create_usertable()
+            hashed_pswd = make_hashes(password)
+
+            result = login_user(username, check_hashes(password, hashed_pswd))
+            if result:
+
+                st.success("Logged In as {}".format(username))
+
+                home()
+            else:
+                st.warning("Incorrect Username/Password")
+
+    elif choice == "SignUp":
+        st.subheader("Create New Account")
+        new_user = st.text_input("Username")
+        new_password = st.text_input("Password", type="password")
+
+        if st.button("Signup"):
+            create_usertable()
+            add_userdata(new_user, make_hashes(new_password))
+            st.success("You have successfully created a valid Account")
+            st.info("Go to Login Menu to login")
 
 
 if __name__ == "__main__":
