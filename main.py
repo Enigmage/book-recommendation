@@ -286,7 +286,6 @@ def main():
     #     st.subheader("Home")
 
     if choice == "Login":
-        st.subheader("Login to use")
 
         username = st.sidebar.text_input("User Name")
         password = st.sidebar.text_input("Password", type="password")
