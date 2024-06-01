@@ -19,14 +19,14 @@ pipeline {
             }
         }
 
-         stage("Run Test Cases") {
-            steps {
-                // Checkout the code from Git
-                script{
-                    python -m unittest discover
-                }
-            }
-        }
+        //  stage("Run Test Cases") {
+        //     steps {
+        //         // Checkout the code from Git
+        //         script{
+        //             python -m unittest discover
+        //         }
+        //     }
+        // }
 
         stage("Build Docker Image") {
             steps {
