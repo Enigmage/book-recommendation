@@ -19,6 +19,15 @@ pipeline {
             }
         }
 
+         stage("Run Test Cases") {
+            steps {
+                // Checkout the code from Git
+                script{
+                    python -m unittest discover
+                }
+            }
+        }
+
         stage("Build Docker Image") {
             steps {
                 script {
@@ -43,6 +52,7 @@ pipeline {
                             -Dsonar.host.url=${SONAR_HOST_URL} \
                             -Dsonar.login=${SONAR_LOGIN} \
                             -Dsonar.python.version=${PYTHON_VERSION}
+                            -Dsonar.python.coverage.reportPath = coverage.xml
                         """
                     }
                 }
