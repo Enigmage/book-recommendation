@@ -2,9 +2,22 @@ import numpy as np
 import streamlit as st
 import pandas as pd
 import hmac
+import sqlite3
+import hashlib
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
+
+conn = sqlite3.connect("user_data.db")
+c = conn.cursor()
+
+# Create user table if not exists
+c.execute(
+    """CREATE TABLE IF NOT EXISTS users
+             (username TEXT PRIMARY KEY, password TEXT)"""
+)
+conn.commit()
+
 
 # collaborative filtering works perfectly on local
 # from surprise import Reader, Dataset, SVD
@@ -157,9 +170,61 @@ def main():
         initial_sidebar_state="auto",
         menu_items=None,
     )
-    st.session_state.logged_in = False
-    if not check_password():
-        st.stop()
+    st.session_state["logged_in"] = False
+
+    def authenticate_user(username, password):
+        """Authenticates user against the SQLite database."""
+        c.execute("SELECT * FROM users WHERE username = ?", (username,))
+        user = c.fetchone()
+        if user :
+            return True
+        else:
+            return False
+
+    def create_user(username, password):
+        """Creates a new user in the SQLite database."""
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        c.execute(
+            "INSERT INTO users (username, password) VALUES (?, ?)",
+            (username, hashed_password),
+        )
+        conn.commit()
+
+    def login_form():
+        """Form with widgets to collect user information"""
+        with st.form("Login"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            if st.form_submit_button("Log in"):
+                if authenticate_user(username, password):
+                    st.session_state["username"] = username
+                    st.session_state["logged_in"] = True
+                    return
+                else:
+                    st.error("Invalid username or password")
+                    return
+
+    def signup_form():
+        """Form with widgets to collect user signup information"""
+        with st.form("Signup"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            confirm_password = st.text_input("Confirm Password", type="password")
+            if st.form_submit_button("Sign Up"):
+                if password == confirm_password:
+                    create_user(username, password)
+                    st.success("User created successfully. Please log in.")
+                else:
+                    st.error("Passwords do not match")
+
+    print(st.session_state["logged_in"])
+    if not st.session_state["logged_in"]:
+        login_form()
+        st.write("Don't have an account? Sign up below.")
+        signup_form()
+        return
+    # if not check_password():
+    #     st.stop()
 
     # Header contents
     st.write("# Book Recommender")
