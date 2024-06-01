@@ -27,6 +27,7 @@ RUN poetry install
 
 COPY . .
 
+RUN poetry run python -m unittest discover
 
 EXPOSE 8501
 
