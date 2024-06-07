@@ -3,13 +3,14 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 import hashlib
+import requests
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 
 
 # data loading
-@st.cache()
+@st.cache_data()
 def read_book_data():
     return pd.read_csv("data/books_cleaned.csv")
 
@@ -19,7 +20,7 @@ def read_book_data():
 #     return pd.read_csv('data/ratings.csv')
 
 
-@st.cache()
+@st.cache_data()
 def content(books):
     books["content"] = pd.Series(
         books[["authors", "title", "genres", "description"]].fillna("").values.tolist()
@@ -267,6 +268,33 @@ def view_all_users():
     return data
 
 
+def openlibrary_search(query):
+    url = f"https://openlibrary.org/search.json?q={query}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
+
+def display_search_results(results):
+    if results:
+        for i, book in enumerate(results["docs"]):
+            st.subheader(book.get("title", "No Title"))
+            author_names = book.get("author_name", [])
+            authors = ", ".join(author_names) if author_names else "Unknown Author"
+            st.write(f"Author(s): {authors}")
+            publish_year = book.get("first_publish_year", "N/A")
+            st.write(f"First Published: {publish_year}")
+            cover_id = book.get("cover_i", None)
+            if cover_id:
+                cover_url = f"https://covers.openlibrary.org/b/id/{cover_id}-L.jpg"
+                st.image(cover_url, width=150)
+            st.markdown("---")
+    else:
+        st.write("No results found.")
+
+
 def main():
     """Simple Login App"""
     st.set_page_config(
@@ -279,13 +307,17 @@ def main():
 
     st.title("Book Recommendation App")
 
-    menu = ["Home", "Login", "SignUp"]
+    menu = ["OpenLibrary Search", "Login", "SignUp"]
     choice = st.sidebar.selectbox("Menu", menu)
 
-    # if choice == "Home":
-    #     st.subheader("Home")
+    if choice == "OpenLibrary Search":
+        st.header("OpenLibrary Search")
+        search_query = st.text_input("Search by book title or author")
+        if st.button("Search"):
+            results = openlibrary_search(search_query)
+            display_search_results(results)
 
-    if choice == "Login":
+    elif choice == "Login":
 
         username = st.sidebar.text_input("User Name")
         password = st.sidebar.text_input("Password", type="password")
