@@ -307,10 +307,10 @@ def main():
 
     st.title("Book Recommendation App")
 
-    menu = ["OpenLibrary Search", "Login", "SignUp"]
+    menu = ["Search", "Login", "SignUp"]
     choice = st.sidebar.selectbox("Menu", menu)
 
-    if choice == "OpenLibrary Search":
+    if choice == "Search":
         st.header("OpenLibrary Search")
         search_query = st.text_input("Search by book title or author")
         if st.button("Search"):
